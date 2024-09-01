@@ -25,7 +25,6 @@ export const Scheduler = () => {
   const commitChanges = async ({ added, changed, deleted }: ChangeSet) => {
     if (added) {
       const appointmentToAdd = {
-        id: '',
         startDate: currentDate,
         ...added,
       };
