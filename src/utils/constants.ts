@@ -47,3 +47,7 @@ export const APPOINTMENT_FORM_MESSAGES = {
 };
 
 export const PL_LOCALE = 'PL-pl';
+
+export const QUERY_KEYS = {
+  APPOINTMENT_KEY: 'appointments',
+};

@@ -1,3 +1,8 @@
 import { Scheduler } from './components/Scheduler';
+import Provider from './utils/Provider';
 
-export const App = () => <Scheduler />;
+export const App = () => (
+  <Provider>
+    <Scheduler />
+  </Provider>
+);

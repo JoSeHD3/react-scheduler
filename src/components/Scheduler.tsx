@@ -12,48 +12,40 @@ import {
   AppointmentForm,
 } from '@devexpress/dx-react-scheduler-material-ui';
 import { Paper } from '@mui/material';
-import { generateRandomId, getTodayDate } from '../utils/methods';
-import {
-  AppointmentModel,
-  ChangeSet,
-  EditingState,
-  IntegratedEditing,
-  ViewState,
-} from '@devexpress/dx-react-scheduler';
+import { getTodayDate } from '../utils/methods';
+import { ChangeSet, EditingState, IntegratedEditing, ViewState } from '@devexpress/dx-react-scheduler';
 import { APPOINTMENT_FORM_MESSAGES, PL_LOCALE, TODAY_MESSAGES, VIEW, VIEW_LABEL } from '../utils/constants';
-import { useState } from 'react';
+import { useAppointments } from '../utils/hooks/useAppointments';
 
 const currentDate = getTodayDate();
-const initialData: AppointmentModel[] = [
-  { id: generateRandomId(), startDate: `${currentDate}T09:45`, endDate: `${currentDate}T11:00`, title: 'Spotkanie' },
-];
 
 export const Scheduler = () => {
-  const [data, setData] = useState<AppointmentModel[]>(initialData);
+  const { appointments, isLoading, error, addAppointment, updateAppointment, deleteAppointment } = useAppointments();
 
-  const commitChanges = ({ added, changed, deleted }: ChangeSet) => {
+  const commitChanges = async ({ added, changed, deleted }: ChangeSet) => {
     if (added) {
-      const newAppointment: AppointmentModel = {
-        id: generateRandomId(),
-        startDate: added.startDate!,
+      const appointmentToAdd = {
+        id: '',
+        startDate: currentDate,
         ...added,
       };
-      setData([...data, newAppointment]);
+      await addAppointment(appointmentToAdd);
     }
     if (changed) {
-      const updatedData = data.map((appointment) =>
-        changed[appointment.id as string] ? { ...appointment, ...changed[appointment.id as string] } : appointment
-      );
-      setData(updatedData);
+      await Promise.all(Object.entries(changed).map(([id, updates]) => updateAppointment({ id, ...updates })));
     }
     if (deleted !== undefined) {
-      const filteredData = data.filter((appointment) => appointment.id !== deleted);
-      setData(filteredData);
+      await deleteAppointment(deleted as string);
     }
   };
+
+  if (isLoading) return <p>Ładowanie...</p>;
+
+  if (error) return <p>Wystąpił błąd...</p>;
+
   return (
     <Paper>
-      <DevScheduler data={data} locale={PL_LOCALE}>
+      <DevScheduler data={appointments} locale={PL_LOCALE}>
         <ViewState defaultCurrentDate={currentDate} defaultCurrentViewName={VIEW.WEEK} />
         <EditingState onCommitChanges={commitChanges} />
         <IntegratedEditing />
